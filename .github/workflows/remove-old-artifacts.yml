@@ -1,0 +1,54 @@
+name: Remove old artifacts
+
+on:
+  schedule:
+    - cron: '0 8 * * SAT'
+  repository_dispatch:
+  workflow_dispatch:
+
+jobs:
+  remove-old-artifacts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    permissions:
+      actions: write
+
+    steps:
+      - name: Remove old artifacts
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          KEEP_RECENT=4
+          MAX_AGE_DAYS=1
+
+          NOW=$(date +%s)
+
+          gh api \
+            repos/${{ github.repository }}/actions/artifacts \
+            --paginate \
+            --jq '.artifacts
+              | sort_by(.created_at)
+              | reverse
+              | .[]
+              | [.id, .created_at]
+              | @tsv' |
+          nl -v0 |
+          while read INDEX ID CREATED_AT; do
+
+            # Skip recent artifacts
+            if [ "$INDEX" -lt "$KEEP_RECENT" ]; then
+              continue
+            fi
+
+            CREATED_TS=$(date -d "$CREATED_AT" +%s)
+            AGE_DAYS=$(( (NOW - CREATED_TS) / 86400 ))
+
+            if [ "$AGE_DAYS" -ge "$MAX_AGE_DAYS" ]; then
+              echo "Deleting artifact $ID ($AGE_DAYS days old)"
+
+              gh api \
+                -X DELETE \
+                repos/${{ github.repository }}/actions/artifacts/$ID
+            fi
+          done
