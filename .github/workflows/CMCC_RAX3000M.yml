@@ -210,6 +210,6 @@ jobs:
       if: env.UPLOAD_RELEASE == 'true' && !cancelled()
       with:
         delete_releases: true
-        releases_keep_latest: 4
+        releases_keep_latest: 6
         delete_tags: true
         gh_token: ${{ secrets.GITHUB_TOKEN }}
