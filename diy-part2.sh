@@ -18,3 +18,6 @@
 
 # Modify hostname
 #sed -i 's/OpenWrt/P3TERX-Router/g' package/base-files/files/bin/config_generate
+
+# 临时禁用 mihomo 的 UPX 压缩，避免因 host/bin/upx 缺失导致编译失败
+sed -i '\|$(STAGING_DIR_HOST)/bin/upx --lzma --best|d' feeds/helloworld/mihomo/Makefile
