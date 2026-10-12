@@ -19,6 +19,5 @@
 # Modify hostname
 #sed -i 's/OpenWrt/P3TERX-Router/g' package/base-files/files/bin/config_generate
 
-# mihomo 使用 Go 编译器的链接优化（-s -w）减小二进制体积，不依赖 UPX
-# OpenWrt golang-package.mk 的 Go 构建流程通常已启用 -s -w；这里只移除 UPX 后处理步骤
+# 临时禁用 mihomo 的 UPX 压缩，避免因 host/bin/upx 缺失导致编译失败
 sed -i '\|$(STAGING_DIR_HOST)/bin/upx --lzma --best|d' feeds/helloworld/mihomo/Makefile
